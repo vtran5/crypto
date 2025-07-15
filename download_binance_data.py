@@ -1,3 +1,4 @@
+
 import requests
 import csv
 import time
@@ -6,10 +7,23 @@ from datetime import datetime, timedelta, timezone
 BINANCE_API_URL = "https://api.binance.com/api/v3/klines"
 MAX_LIMIT = 1000  # Binance max limit per request
 
-# --- Configurable parameters (hardcoded for now) ---
-SYMBOLS = ["BTCUSDT", "ETHUSDT"]
+# --- Configurable parameters ---
+SYMBOLS_CSV = "symbols.csv"
 INTERVAL = "1h"
 MONTHS_BACK = 6
+
+def load_symbols_from_csv(filename):
+    symbols = []
+    try:
+        with open(filename, newline="") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                symbol = row.get("symbol")
+                if symbol:
+                    symbols.append(symbol.strip())
+    except Exception as e:
+        print(f"Error reading symbols from {filename}: {e}")
+    return symbols
 
 def get_klines(symbol, interval, start_time, end_time):
     """Fetch klines from Binance API with error handling and retries."""
@@ -45,14 +59,19 @@ def write_klines_to_csv(symbol, interval, klines, write_header=False):
         for row in klines:
             writer.writerow(row)
 
+
 def main():
+    symbols = load_symbols_from_csv(SYMBOLS_CSV)
+    if not symbols:
+        print(f"No symbols found in {SYMBOLS_CSV}. Exiting.")
+        return
     end_time = datetime.now(timezone.utc)
     start_time = end_time - timedelta(days=MONTHS_BACK * 30)
     interval_minutes = 60  # For "1h"
     interval_delta = timedelta(minutes=interval_minutes)
     max_span = interval_delta * MAX_LIMIT
 
-    for symbol in SYMBOLS:
+    for symbol in symbols:
         print(f"Downloading {symbol} {INTERVAL} data from {start_time} to {end_time}")
         current_start = start_time
         first_chunk = True
