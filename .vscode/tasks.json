@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Binance Downloader",
+            "type": "shell",
+            "command": "D:/dev/crypto/.venv/Scripts/python.exe",
+            "args": [
+                "download_binance_data.py"
+            ],
+            "group": "build",
+            "problemMatcher": []
+        }
+    ]
+}
